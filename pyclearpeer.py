@@ -14,17 +14,20 @@ if host["blocks"] != host["headers"]:
 getpeerinfo = subprocess.run( [ "raven-cli", "getpeerinfo" ], capture_output=True, text=True )
 peers = json.loads(getpeerinfo.stdout)
 
-print ( "Starting with " + str( len(peers) ) + " peers")
+num_peers = len(peers)
+print ( "Starting with " + str( num_peers ) + " peers")
 for peer in peers:
     if host["blocks"] == peer["synced_blocks"]:
         if peer["inbound"] == True:
             if random.getrandbits(1):   # Roll the 50/50 dice
                 subprocess.run( [ "raven-cli", "disconnectnode", peer["addr"] ] )
                 print ( "Disconnected peer " + peer["addr"] )
+                num_peers-=1
             else:
                 print ( "Skipping lucky peer " + peer["addr"] )
         else:
             print ( "Skipping non-inbound peer " + peer["addr"] )
     else:
         print ( "Skipping unsynced peer " + peer["addr"] )
+print ( "Ended with " + str( num_peers ) + " peers")
 
